@@ -1,8 +1,8 @@
 # PROGRESS TRACKER & LIVE STATE
 
 ## Current Status
-*   **Phase:** Phase 1 & Phase 2 (Backend Foundation & Ingestion Engine)
-*   **Latest Changes:** Built Mongoose models (User, Contest, ActivityLog), error handling middleware, smart routing `/api/redirect` click telemetry, contest feeds, and CLIST automated ingestion pipeline with node-cron.
+*   **Phase:** Phase 2 (Completed) -> Phase 3 (Frontend Initialization)
+*   **Latest Changes:** [2026-09-30 23:07:00] Completed Phase 2 implementation of the automated CLIST ingestion pipeline with major platform filtering (LeetCode, CodeChef, Codeforces, AtCoder), 12-hour `node-cron` background worker with duplicate-safe upserting, and the secure admin injection endpoint (`/api/contests/custom`) protected by API key authentication.
 *   **Current Blockers:** None.
 
 ## Phase 1: Backend Foundation (Completed)
@@ -14,9 +14,9 @@
 
 ## Phase 2: Automated Ingestion Pipeline (Completed)
 - [x] Setup `node-cron` job running every 12 hours.
-- [x] Integrate CLIST API to fetch upcoming Codeforces, LeetCode, CodeChef contests.
+- [x] Integrate CLIST API to fetch upcoming Codeforces, LeetCode, CodeChef, and AtCoder contests.
 - [x] Write logic to filter and save public contests to MongoDB without duplication.
-- [x] Create admin endpoint for manual injection of private tests (Skillrack, Infosys).
+- [x] Create admin endpoint (`/api/contests/custom`) for secure manual injection of private tests (Skillrack, TCS NQT) protected by admin authentication.
 
 ## Phase 3: Frontend Initialization (Pending)
 - [ ] Scaffold React application with Vite.

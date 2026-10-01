@@ -16,15 +16,14 @@ const getContests = async (req, res, next) => {
       filter.platform = new RegExp(platform, 'i');
     }
 
-    // Include contests that are either currently ongoing or starting in the future
+    // Include contests starting from 2 hours ago onwards
     const now = new Date();
-    // Allow contests starting within the last 2 hours or in the future
     const cutoff = new Date(now.getTime() - 2 * 60 * 60 * 1000);
     filter.startTime = { $gte: cutoff };
 
     const contests = await Contest.find(filter)
       .sort({ startTime: 1 })
-      .limit(30);
+      .limit(50);
 
     res.status(200).json({
       success: true,
@@ -121,33 +120,59 @@ const getNextBestAction = async (req, res, next) => {
 };
 
 /**
- * Admin Injection of Private Tests (Skillrack, TCS NQT mock, Internal Assessment)
+ * Manual Admin Injection Endpoint (/api/contests/custom)
+ * Injects private college placement tests (e.g., Skillrack, TCS NQT) into timeline
  */
-const createPrivateContest = async (req, res, next) => {
+const createCustomContest = async (req, res, next) => {
   try {
-    const { title, platform, url, startTime, duration, category, tierRecommendation } = req.body;
-
-    if (!title || !platform || !url || !startTime || !duration) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide title, platform, url, startTime, and duration.'
-      });
-    }
-
-    const contest = await Contest.create({
+    const {
       title,
       platform,
       url,
-      startTime: new Date(startTime),
-      duration: Number(duration),
-      category: category || 'Coding',
-      tierRecommendation: tierRecommendation || ['5LPA', '10LPA', '10+LPA'],
-      isVerified: true
-    });
+      startTime,
+      duration,
+      category,
+      tierRecommendation,
+      externalId
+    } = req.body;
+
+    if (!title || !platform || !url || !startTime || duration === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide required fields: title, platform, url, startTime, and duration.'
+      });
+    }
+
+    // Normalize duration: if duration is less than 300, it was likely passed in minutes
+    const durationInSeconds = Number(duration) < 300 ? Number(duration) * 60 : Number(duration);
+    const parsedStartTime = new Date(startTime);
+    const computedEndTime = new Date(parsedStartTime.getTime() + durationInSeconds * 1000);
+
+    const generatedExternalId = externalId || `custom_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+    // Upsert or create contest to prevent duplicate injections of the same test
+    const contest = await Contest.findOneAndUpdate(
+      { $or: [{ externalId: generatedExternalId }, { url, startTime: parsedStartTime }] },
+      {
+        title: title.trim(),
+        platform: platform.trim(),
+        url: url.trim(),
+        startTime: parsedStartTime,
+        duration: durationInSeconds,
+        endTime: computedEndTime,
+        category: category || 'Coding',
+        tierRecommendation: Array.isArray(tierRecommendation) && tierRecommendation.length > 0
+          ? tierRecommendation
+          : ['5LPA', '10LPA', '10+LPA'],
+        externalId: generatedExternalId,
+        isVerified: true
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     res.status(201).json({
       success: true,
-      message: 'Private test / contest successfully injected',
+      message: 'Private test / placement contest successfully injected into timeline',
       data: contest
     });
   } catch (error) {
@@ -168,7 +193,7 @@ const seedInitialContests = async () => {
           title: 'CodeChef Starters 142 (Div 2 & 3)',
           platform: 'CodeChef',
           url: 'https://www.codechef.com/START142',
-          startTime: new Date(now.getTime() + 4 * 60 * 60 * 1000), // in 4 hours
+          startTime: new Date(now.getTime() + 4 * 60 * 60 * 1000),
           duration: 7200,
           category: 'Coding',
           externalId: 'cc_starters_142',
@@ -178,7 +203,7 @@ const seedInitialContests = async () => {
           title: 'LeetCode Weekly Contest 412',
           platform: 'LeetCode',
           url: 'https://leetcode.com/contest/weekly-contest-412',
-          startTime: new Date(now.getTime() + 18 * 60 * 60 * 1000), // in 18 hours
+          startTime: new Date(now.getTime() + 18 * 60 * 60 * 1000),
           duration: 5400,
           category: 'Coding',
           externalId: 'lc_weekly_412',
@@ -227,6 +252,7 @@ const seedInitialContests = async () => {
 module.exports = {
   getContests,
   getNextBestAction,
-  createPrivateContest,
+  createCustomContest,
+  createPrivateContest: createCustomContest,
   seedInitialContests
 };

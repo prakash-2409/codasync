@@ -1,23 +1,36 @@
 const cron = require('node-cron');
 const { fetchAndIngestContests } = require('./clistService');
 
+let cronJobInstance = null;
+
 /**
  * Initialize automated background cron workers
+ * Runs every 12 hours (cron format: "0 * /12 * * *" without space) to fetch and sync contests from CLIST API
  */
 const initCronJobs = () => {
-  console.log('[Cron Service] Scheduling CLIST automated contest ingestion every 12 hours...');
+  console.log('[Cron Service] Initializing CLIST ingestion cron scheduler (Every 12 hours: 0 */12 * * *)...');
 
-  // Schedule to run every 12 hours
-  cron.schedule('0 */12 * * *', async () => {
-    console.log('[Cron Service] Running scheduled CLIST contest sync...');
-    await fetchAndIngestContests();
+  // Schedule task every 12 hours
+  cronJobInstance = cron.schedule('0 */12 * * *', async () => {
+    console.log('[Cron Service] Executing scheduled 12-hour CLIST contest sync...');
+    try {
+      await fetchAndIngestContests();
+    } catch (err) {
+      console.error('[Cron Service] Scheduled sync encounter an error:', err.message);
+    }
   });
 
-  // Run initial sync 5 seconds after startup
+  // Execute an immediate initial sync in the background (with 3-second delay for DB stabilization)
   setTimeout(async () => {
-    console.log('[Cron Service] Triggering initial background contest synchronization...');
-    await fetchAndIngestContests();
-  }, 5000);
+    console.log('[Cron Service] Executing initial startup contest synchronization...');
+    try {
+      await fetchAndIngestContests();
+    } catch (err) {
+      console.error('[Cron Service] Initial sync failed:', err.message);
+    }
+  }, 3000);
+
+  return cronJobInstance;
 };
 
 module.exports = {
