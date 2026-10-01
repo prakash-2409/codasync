@@ -2,11 +2,19 @@ const User = require('../models/User');
 const ActivityLog = require('../models/ActivityLog');
 
 /**
- * Get primary student profile or create default profile for St. Joseph's Engineering Student
+ * Get student profile
+ * Prefers authenticated user via req.user or looks up by Clerk ID / default profile
  */
 const getUserProfile = async (req, res, next) => {
   try {
-    let user = await User.findOne();
+    let user = req.user;
+    if (!user && req.auth?.userId) {
+      user = await User.findOne({ clerkId: req.auth.userId });
+    }
+    if (!user) {
+      user = await User.findOne();
+    }
+
     if (!user) {
       user = await User.create({
         name: 'Prakash R',
@@ -28,7 +36,7 @@ const getUserProfile = async (req, res, next) => {
 };
 
 /**
- * Update user target placement tier
+ * Update student target placement tier
  */
 const updateTargetTier = async (req, res, next) => {
   try {
@@ -40,14 +48,22 @@ const updateTargetTier = async (req, res, next) => {
       });
     }
 
-    let user = await User.findOne();
+    let user = req.user;
+    if (!user && req.auth?.userId) {
+      user = await User.findOne({ clerkId: req.auth.userId });
+    }
+    if (!user) {
+      user = await User.findOne();
+    }
+
     if (!user) {
       user = new User({
-        name: 'Prakash R',
-        registerNumber: '312320104001',
-        email: 'prakash.cse@stjosephs.ac.in'
+        name: 'Student',
+        email: req.auth?.userId ? `${req.auth.userId}@stjosephs.ac.in` : 'student@stjosephs.ac.in',
+        targetTier
       });
     }
+
     user.targetTier = targetTier;
     await user.save();
 
@@ -62,29 +78,28 @@ const updateTargetTier = async (req, res, next) => {
 };
 
 /**
- * Get Platform-Agnostic Sienna Heatmap matrix (last 16 to 52 weeks activity logs)
+ * Get Platform-Agnostic Sienna Heatmap matrix
  */
 const getUserHeatmap = async (req, res, next) => {
   try {
-    // Generate dates for the past 112 days (16 weeks)
-    const daysToShow = 112;
+    const daysToShow = 91;
     const now = new Date();
     const startDate = new Date();
     startDate.setDate(now.getDate() - daysToShow + 1);
     startDate.setHours(0, 0, 0, 0);
 
-    // Aggregate activity counts per calendar day (UTC/Local)
+    const user = req.user || (req.auth?.userId ? await User.findOne({ clerkId: req.auth.userId }) : await User.findOne());
+
+    const matchQuery = { clickedAt: { $gte: startDate } };
+    if (user) {
+      matchQuery.userId = user._id;
+    }
+
     const logs = await ActivityLog.aggregate([
-      {
-        $match: {
-          clickedAt: { $gte: startDate }
-        }
-      },
+      { $match: matchQuery },
       {
         $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$clickedAt' }
-          },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$clickedAt' } },
           count: { $sum: 1 }
         }
       }
@@ -102,12 +117,10 @@ const getUserHeatmap = async (req, res, next) => {
       const dateStr = d.toISOString().split('T')[0];
       const count = logMap[dateStr] || 0;
 
-      // Tier 0 to 4 for styling in Sienna Palette
       let level = 0;
-      if (count >= 4) level = 4;
-      else if (count >= 3) level = 3;
-      else if (count >= 2) level = 2;
-      else if (count >= 1) level = 1;
+      if (count >= 3) level = 3;
+      else if (count === 2) level = 2;
+      else if (count === 1) level = 1;
 
       heatmap.push({
         date: dateStr,
@@ -118,7 +131,6 @@ const getUserHeatmap = async (req, res, next) => {
     }
 
     const totalContributions = logs.reduce((sum, item) => sum + item.count, 0);
-    const user = await User.findOne();
 
     res.status(200).json({
       success: true,

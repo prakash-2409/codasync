@@ -17,6 +17,12 @@ const engagementLogSchema = new mongoose.Schema({
 }, { _id: false });
 
 const userSchema = new mongoose.Schema({
+  clerkId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true
+  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -26,14 +32,21 @@ const userSchema = new mongoose.Schema({
   },
   registerNumber: {
     type: String,
-    required: [true, 'Register Number is required'],
-    unique: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: function () {
+      return '31232' + Math.floor(100000 + Math.random() * 900000);
+    }
   },
   name: {
     type: String,
     required: [true, 'Student Name is required'],
-    trim: true
+    trim: true,
+    default: 'Student'
+  },
+  avatarUrl: {
+    type: String,
+    default: ''
   },
   activityStreak: {
     type: Number,
@@ -47,7 +60,7 @@ const userSchema = new mongoose.Schema({
   targetTier: {
     type: String,
     enum: ['5LPA', '10LPA', '10+LPA'],
-    default: '10LPA'
+    default: '10+LPA'
   }
 }, {
   timestamps: true

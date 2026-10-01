@@ -5,9 +5,11 @@ const {
   updateTargetTier,
   getUserHeatmap
 } = require('../controllers/userController');
+const { requireAuth } = require('../middleware/requireAuth');
 
-router.get('/profile', getUserProfile);
-router.patch('/tier', updateTargetTier);
-router.get('/heatmap', getUserHeatmap);
+// All student-specific endpoints are protected by Clerk JWT authentication
+router.get('/profile', requireAuth, getUserProfile);
+router.patch('/tier', requireAuth, updateTargetTier);
+router.get('/heatmap', requireAuth, getUserHeatmap);
 
 module.exports = router;

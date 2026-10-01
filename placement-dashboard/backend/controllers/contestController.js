@@ -35,6 +35,8 @@ const getContests = async (req, res, next) => {
   }
 };
 
+const { calculateNextBestAction } = require('../services/recommendationEngine');
+
 /**
  * Single-Threaded Recommendation Engine: Get the Single "Next-Best-Action"
  * Isolates high-leverage task according to user target tier and urgency
@@ -42,73 +44,10 @@ const getContests = async (req, res, next) => {
 const getNextBestAction = async (req, res, next) => {
   try {
     const user = await User.findOne();
-    const targetTier = user ? user.targetTier : '10+LPA';
-    const now = new Date();
+    // Allow overriding tier via query param (e.g., /api/contests/next-best-action?tier=5LPA)
+    const targetTier = req.query.tier || (user ? user.targetTier : '10+LPA');
 
-    // 1. Look for live or imminent contests (starting within 48 hours)
-    const upcomingContests = await Contest.find({
-      startTime: { $gte: new Date(now.getTime() - 1 * 60 * 60 * 1000) },
-      tierRecommendation: targetTier
-    }).sort({ startTime: 1 });
-
-    let nextAction = null;
-
-    if (upcomingContests.length > 0) {
-      const topContest = upcomingContests[0];
-      const startsInMs = new Date(topContest.startTime).getTime() - now.getTime();
-      const isLive = startsInMs <= 0;
-
-      nextAction = {
-        type: 'CONTEST_PRIORITY',
-        id: topContest._id,
-        title: topContest.title,
-        platform: topContest.platform,
-        url: topContest.url,
-        startTime: topContest.startTime,
-        duration: topContest.duration,
-        category: topContest.category,
-        isLive,
-        startsInMinutes: Math.max(0, Math.round(startsInMs / (1000 * 60))),
-        rationale: targetTier === '10+LPA'
-          ? `High-leverage Tier 1 milestone: Competing in ${topContest.platform} builds global rating for >10 LPA shortlist criteria.`
-          : targetTier === '10LPA'
-          ? `Crucial Tier 2 consistency: Participating in ${topContest.platform} meets the weekly 5-10 LPA speed benchmark.`
-          : `Foundational Aptitude/Coding test for 5 LPA eligibility.`
-      };
-    } else {
-      // Fallback default high-yield action based on tier
-      if (targetTier === '10+LPA') {
-        nextAction = {
-          type: 'DSA_CURATED',
-          title: 'Dynamic Programming & Graph Patterns (Striver SDE Sheet)',
-          platform: 'LeetCode',
-          url: 'https://leetcode.com/problemset/all/?topicSlugs=dynamic-programming',
-          category: 'Coding',
-          isLive: false,
-          rationale: 'Target Tier >10 LPA requires master-level DP & Graph proficiency. Complete 2 patterns today.'
-        };
-      } else if (targetTier === '10LPA') {
-        nextAction = {
-          type: 'APTITUDE_CURATED',
-          title: 'Advanced TCS NQT / Cognizant Aptitude Drill',
-          platform: 'Skillrack',
-          url: 'https://www.skillrack.com',
-          category: 'Aptitude',
-          isLive: false,
-          rationale: '5-10 LPA placement screening requires >85% accuracy in Quantitative Aptitude.'
-        };
-      } else {
-        nextAction = {
-          type: 'FOUNDATION_CURATED',
-          title: 'Core Java & Data Structures Fundamentals',
-          platform: 'Skillrack',
-          url: 'https://www.skillrack.com',
-          category: 'Coding',
-          isLive: false,
-          rationale: 'Core 5 LPA drive eligibility: Complete today’s mandatory departmental coding challenge.'
-        };
-      }
-    }
+    const nextAction = await calculateNextBestAction(targetTier);
 
     res.status(200).json({
       success: true,

@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: #FBF9F5;
+    color: #2E2524;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  ::selection {
+    background-color: #F5D6C9;
+    color: #4E2512;
+  }
+}
+
+/* Subtle parchment grain or texture styling if desired */
+.bg-parchment-pattern {
+  background-color: #FBF9F5;
+  background-image: radial-gradient(#E8E0D2 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+}
+
+/* Editorial badge utilities */
+.badge-sienna {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sienna-100 text-sienna-700 border border-sienna-200;
+}
+
+.badge-tier {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-parchment-300 text-warm-brown-800 border border-parchment-border;
+}
