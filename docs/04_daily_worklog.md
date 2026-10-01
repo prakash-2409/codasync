@@ -103,7 +103,7 @@ This document maintains a continuous, minute-by-minute audit trail of engineerin
   * **Click Telemetry Pipeline:** Replaced static external `<a>` tags with `handleActionClick(targetUrl, contestId)`, routing clicks through backend `/api/redirect` via `api.getSmartRedirectUrl` to guarantee atomic MongoDB logging in `engagementLogs` and `activityStreak`.
   * **Optimistic Telemetry Feedback:** Immediate UI state increment for `activityStreak` and local log appending so students receive immediate visual feedback on their streak.
   * **Reactive Target Tier Switching:** Supported both `PUT` and `PATCH` HTTP methods on `/api/users/tier` with server-side tier normalization. When `onTierChange` fires, `Dashboard` updates MongoDB and immediately re-fetches the Next-Best-Action for dynamic, single-threaded recommendation updates.
-* **Commit:** Pending Phase 6 commit.
+* **Commit:** `8e424f4` — *feat(phase-6): finalize Dashboard assembly, click telemetry redirect, and reactive tier switcher* (20:09:26 IST).
 
 ---
 
