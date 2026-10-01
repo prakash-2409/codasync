@@ -37,7 +37,7 @@ function AuthBridge() {
 /**
  * Main Authenticated Placement Dashboard
  */
-function Dashboard() {
+function Dashboard({ banner }) {
   const { user: clerkUser } = useUser();
   const [user, setUser] = useState({
     name: 'Student',
@@ -121,6 +121,8 @@ function Dashboard() {
 
   return (
     <FocusLayout user={user} onTierChange={handleTierChange}>
+      {banner}
+
       {/* Top Banner / Notification */}
       {error && (
         <div className="mb-6 p-4 rounded-xl bg-sienna-50 border border-sienna-200 text-sienna-800 flex items-center justify-between text-xs">
@@ -399,22 +401,23 @@ export default function App() {
   // Fallback demo mode if developer has not yet inserted their real Clerk publishable key
   if (!hasClerkKey) {
     return (
-      <FocusLayout>
-        <div className="mb-8 p-6 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900">
-          <div className="flex items-start gap-3">
-            <GraduationCap className="w-5 h-5 text-sienna-600 flex-shrink-0 mt-0.5" />
-            <div className="space-y-1">
-              <h3 className="font-semibold text-sm text-warm-brown-950">
-                Clerk Authentication Configured
-              </h3>
-              <p className="text-xs text-warm-brown-700 leading-relaxed">
-                Clerk provider integration is active. To enable live Gmail sign-ins, add your <code className="px-1.5 py-0.5 rounded bg-amber-100 font-mono text-[11px]">VITE_CLERK_PUBLISHABLE_KEY</code> and <code className="px-1.5 py-0.5 rounded bg-amber-100 font-mono text-[11px]">CLERK_SECRET_KEY</code> to your environment variables.
-              </p>
+      <Dashboard
+        banner={
+          <div className="mb-8 p-6 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900">
+            <div className="flex items-start gap-3">
+              <GraduationCap className="w-5 h-5 text-sienna-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <h3 className="font-semibold text-sm text-warm-brown-950">
+                  Clerk Authentication Configured
+                </h3>
+                <p className="text-xs text-warm-brown-700 leading-relaxed">
+                  Clerk provider integration is active. To enable live Gmail sign-ins, add your <code className="px-1.5 py-0.5 rounded bg-amber-100 font-mono text-[11px]">VITE_CLERK_PUBLISHABLE_KEY</code> and <code className="px-1.5 py-0.5 rounded bg-amber-100 font-mono text-[11px]">CLERK_SECRET_KEY</code> to your environment variables.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <Dashboard />
-      </FocusLayout>
+        }
+      />
     );
   }
 

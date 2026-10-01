@@ -98,17 +98,17 @@ export default function ConsistencyHeatmap({
     };
   }, [activeLogs]);
 
-  // Color mapping based on strict Sienna OS design tokens
+  // Color mapping based on strict Sienna OS design tokens (e.g. bg-parchment-surface, bg-sienna-400, bg-sienna-600)
   const getCellColor = (level) => {
     switch (level) {
       case 3:
         return 'bg-sienna-600 border-sienna-700/40 text-parchment-50'; // 3+ actions
       case 2:
-        return 'bg-sienna-400 border-sienna-500/40 text-parchment-50'; // 2 actions
+        return 'bg-sienna-500 border-sienna-600/40 text-parchment-50'; // 2 actions
       case 1:
-        return 'bg-sienna-200 border-sienna-300 text-warm-brown-900'; // 1 action
+        return 'bg-sienna-400 border-sienna-500/40 text-parchment-50'; // 1 action
       default:
-        return 'bg-parchment-200/90 border-parchment-border/70 hover:border-warm-brown-300'; // 0 actions
+        return 'bg-parchment-surface border-parchment-border/70 hover:border-warm-brown-300'; // 0 actions
     }
   };
 
@@ -218,9 +218,9 @@ export default function ConsistencyHeatmap({
         <div className="flex items-center gap-2 text-[11px] text-warm-brown-500 self-end sm:self-auto select-none">
           <span>Less</span>
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-xs bg-parchment-200 border border-parchment-border/70" title="0 actions" />
-            <span className="w-3 h-3 rounded-xs bg-sienna-200 border border-sienna-300" title="1 action" />
-            <span className="w-3 h-3 rounded-xs bg-sienna-400 border border-sienna-500/40" title="2 actions" />
+            <span className="w-3 h-3 rounded-xs bg-parchment-surface border border-parchment-border/70" title="0 actions" />
+            <span className="w-3 h-3 rounded-xs bg-sienna-400 border border-sienna-500/40" title="1 action" />
+            <span className="w-3 h-3 rounded-xs bg-sienna-500 border border-sienna-600/40" title="2 actions" />
             <span className="w-3 h-3 rounded-xs bg-sienna-600 border border-sienna-700/40" title="3+ actions" />
           </div>
           <span>More</span>

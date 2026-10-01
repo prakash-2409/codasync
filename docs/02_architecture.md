@@ -51,9 +51,9 @@ All external contest/aptitude links are wrapped by our backend to track engageme
 *   **App Shell:** `frontend/src/components/FocusLayout.jsx` establishes a distraction-free environment omitting traditional dense sidebars and multi-column feeds.
 *   **Next-Best-Action Hero:** `frontend/src/App.jsx` renders a single high-priority card displaying platform badge, category, urgency countdown, and tier alignment rationale.
 *   **Gamified Heatmap:** `frontend/src/components/ConsistencyHeatmap.jsx` renders a GitHub-style 90-day proof-of-work matrix directly beneath the Next-Best-Action card:
-    *   `Level 0` (0 actions): `bg-parchment-200`
-    *   `Level 1` (1 action): `bg-sienna-200`
-    *   `Level 2` (2 actions): `bg-sienna-400`
+    *   `Level 0` (0 actions): `bg-parchment-surface`
+    *   `Level 1` (1 action): `bg-sienna-400`
+    *   `Level 2` (2 actions): `bg-sienna-500`
     *   `Level 3` (3+ actions): `bg-sienna-600`
     *   Interactive hover inspection, total 90-day engagement count, active day rate (%), and current streak telemetry.
 *   **Editorial Theme Tokens (`tailwind.config.js`):**
