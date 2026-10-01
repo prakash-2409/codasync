@@ -35,16 +35,21 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
+const { normalizeTier } = require('../services/recommendationEngine');
+
 /**
  * Update student target placement tier
  */
 const updateTargetTier = async (req, res, next) => {
   try {
-    const { targetTier } = req.body;
+    let { targetTier } = req.body;
+    if (targetTier) {
+      targetTier = normalizeTier(targetTier);
+    }
     if (!['5LPA', '10LPA', '10+LPA'].includes(targetTier)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid target tier. Must be 5LPA, 10LPA, or 10+LPA'
+        message: 'Invalid target tier. Must be 5LPA, 10LPA, or >10LPA (10+LPA)'
       });
     }
 

@@ -66,9 +66,9 @@ export const api = {
   getUserHeatmap: () => apiClient.get('/users/heatmap'),
 
   /**
-   * Update student target placement tier ('5LPA' | '10LPA' | '10+LPA')
+   * Update student target placement tier ('5LPA' | '10LPA' | '10+LPA' | '>10LPA')
    */
-  updateTargetTier: (targetTier) => apiClient.patch('/users/tier', { targetTier }),
+  updateTargetTier: (targetTier) => apiClient.put('/users/tier', { targetTier }),
 
   /**
    * Fetch all upcoming and active placement contests/assessments

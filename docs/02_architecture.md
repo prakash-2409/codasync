@@ -49,7 +49,8 @@ All external contest/aptitude links are wrapped by our backend to track engageme
 
 ## Frontend Architecture & Editorial Design System
 *   **App Shell:** `frontend/src/components/FocusLayout.jsx` establishes a distraction-free environment omitting traditional dense sidebars and multi-column feeds.
-*   **Next-Best-Action Hero:** `frontend/src/App.jsx` renders a single high-priority card displaying platform badge, category, urgency countdown, and tier alignment rationale.
+*   **Dashboard Orchestration:** `frontend/src/components/Dashboard.jsx` handles concurrent telemetry fetching (profile, next-best-action, timeline contests), smart redirect click routing (`handleActionClick`), optimistic streak incrementation, and reactive tier switching (`onTierChange`).
+*   **Next-Best-Action Hero:** Renders a single high-priority card displaying platform badge, category, urgency countdown, and tier alignment rationale.
 *   **Gamified Heatmap:** `frontend/src/components/ConsistencyHeatmap.jsx` renders a GitHub-style 90-day proof-of-work matrix directly beneath the Next-Best-Action card:
     *   `Level 0` (0 actions): `bg-parchment-surface`
     *   `Level 1` (1 action): `bg-sienna-400`
@@ -69,7 +70,7 @@ All external contest/aptitude links are wrapped by our backend to track engageme
 *   `POST /api/contests/custom` - Secure manual test injection (Admin protected).
 *   `GET /api/redirect` - Telemetry logging, streak incrementation, and outbound redirection.
 *   `GET /api/users/profile` - User profile, current streak, target tier, and engagement logs (Protected: `requireAuth`).
-*   `PATCH /api/users/tier` - Update target tier (Protected: `requireAuth`).
+*   `PUT/PATCH /api/users/tier` - Update target tier (Protected: `requireAuth`).
 *   `GET /api/users/heatmap` - 90-day consistency heatmap telemetry array (Protected: `requireAuth`).
 
 ## Core Database Schemas (Mongoose)

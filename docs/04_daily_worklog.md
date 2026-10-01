@@ -94,6 +94,19 @@ This document maintains a continuous, minute-by-minute audit trail of engineerin
 
 ---
 
+#### 20:07:00 - 20:10:00 IST | Phase 6 Final Assembly & Click Telemetry Integration
+* **Activity:** Modular Dashboard state assembly, concurrent telemetry fetching, smart redirect click routing, and reactive tier switching.
+* **Component:** `frontend/src/components/Dashboard.jsx`, `frontend/src/App.jsx`, `backend/routes/userRoutes.js`, `backend/controllers/userController.js`, `frontend/src/services/api.js`.
+* **Engineering Decisions (ADR-06):**
+  * **Modular Dashboard Assembly:** Created standalone `Dashboard.jsx` orchestrating the Next-Best-Action card at the top, `ConsistencyHeatmap` immediately below it, and the contest timeline at the bottom.
+  * **Concurrent Telemetry Ingestion:** Engineered `fetchDashboardData` utilizing `Promise.allSettled` to concurrently fetch the student profile, tailored Next-Best-Action, and active timeline contests.
+  * **Click Telemetry Pipeline:** Replaced static external `<a>` tags with `handleActionClick(targetUrl, contestId)`, routing clicks through backend `/api/redirect` via `api.getSmartRedirectUrl` to guarantee atomic MongoDB logging in `engagementLogs` and `activityStreak`.
+  * **Optimistic Telemetry Feedback:** Immediate UI state increment for `activityStreak` and local log appending so students receive immediate visual feedback on their streak.
+  * **Reactive Target Tier Switching:** Supported both `PUT` and `PATCH` HTTP methods on `/api/users/tier` with server-side tier normalization. When `onTierChange` fires, `Dashboard` updates MongoDB and immediately re-fetches the Next-Best-Action for dynamic, single-threaded recommendation updates.
+* **Commit:** Pending Phase 6 commit.
+
+---
+
 ## Current System State & Telemetry
 
 | Layer | Component | Status | Verification Detail |
