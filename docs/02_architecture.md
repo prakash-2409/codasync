@@ -63,9 +63,9 @@ All external contest/aptitude links are wrapped by our backend to track engageme
 *   **API Client Layer:** `frontend/src/services/api.js` provides centralized Axios services for user profile, consistency heatmap, next-best-action retrieval, manual contest injection, and smart redirect generation.
 
 ## Core API Endpoints
-*   `GET /api/health` - Server healthcheck and status.
+*   `GET /api/health` - Server healthcheck and status (Public).
 *   `GET /api/contests` - Fetch filtered active/upcoming contests (Public).
-*   `GET /api/contests/next-best-action` - Single-threaded tier-tailored recommendation (supports `?tier=5LPA`).
+*   `GET /api/contests/next-best-action` - Single-threaded tier-tailored recommendation (Protected: `requireAuth`).
 *   `POST /api/contests/custom` - Secure manual test injection (Admin protected).
 *   `GET /api/redirect` - Telemetry logging, streak incrementation, and outbound redirection.
 *   `GET /api/users/profile` - User profile, current streak, target tier, and engagement logs (Protected: `requireAuth`).

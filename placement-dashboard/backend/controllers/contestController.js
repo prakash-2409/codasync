@@ -43,7 +43,7 @@ const { calculateNextBestAction } = require('../services/recommendationEngine');
  */
 const getNextBestAction = async (req, res, next) => {
   try {
-    const user = await User.findOne();
+    const user = req.user || (req.auth?.userId ? await User.findOne({ clerkId: req.auth.userId }) : await User.findOne());
     // Allow overriding tier via query param (e.g., /api/contests/next-best-action?tier=5LPA)
     const targetTier = req.query.tier || (user ? user.targetTier : '10+LPA');
 

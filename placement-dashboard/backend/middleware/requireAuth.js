@@ -11,6 +11,22 @@ const requireAuth = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      const secretKey = process.env.CLERK_SECRET_KEY;
+      // In local dev without live Clerk credentials, allow graceful dev fallback
+      if (!secretKey || secretKey.includes('placeholder')) {
+        let user = await User.findOne();
+        if (!user) {
+          user = await User.findOrCreateByClerk({
+            clerkId: 'dev_mock_clerk_student',
+            email: 'student.dev@stjosephs.ac.in',
+            name: 'Prakash R'
+          });
+        }
+        req.auth = { userId: user.clerkId || 'dev_mock_clerk_student' };
+        req.user = user;
+        return next();
+      }
+
       return res.status(401).json({
         success: false,
         message: 'Authentication required: Missing or invalid Authorization header.'
@@ -56,52 +72,35 @@ const requireAuth = async (req, res, next) => {
       });
     }
 
-    // Lookup user in MongoDB by Clerk ID
-    let user = await User.findOne({ clerkId: clerkUserId });
+    let email = `${clerkUserId}@stjosephs.ac.in`;
+    let name = 'St. Joseph Student';
+    let avatarUrl = '';
 
-    // Automatic onboarding on first sign-in
-    if (!user) {
-      let email = `${clerkUserId}@stjosephs.ac.in`;
-      let name = 'St. Joseph Student';
-      let avatarUrl = '';
+    // Fetch real profile from Clerk SDK if secret key is configured
+    if (secretKey && !secretKey.includes('placeholder')) {
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkUserId);
+        if (clerkUser) {
+          const primaryEmailObj = clerkUser.emailAddresses?.find(
+            (e) => e.id === clerkUser.primaryEmailAddressId
+          ) || clerkUser.emailAddresses?.[0];
 
-      // Try fetching real user profile from Clerk API if secret key is active
-      if (secretKey && !secretKey.includes('placeholder')) {
-        try {
-          const clerkUser = await clerkClient.users.getUser(clerkUserId);
-          if (clerkUser) {
-            email = clerkUser.emailAddresses?.[0]?.emailAddress || email;
-            name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || name;
-            avatarUrl = clerkUser.imageUrl || '';
-          }
-        } catch (fetchErr) {
-          console.warn('[Clerk Profile Fetch] Notice:', fetchErr.message);
+          email = primaryEmailObj?.emailAddress || email;
+          name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || name;
+          avatarUrl = clerkUser.imageUrl || '';
         }
-      }
-
-      // Check if user exists by email (e.g., pre-seeded account)
-      user = await User.findOne({ email });
-
-      if (user) {
-        // Link existing pre-seeded record to Clerk ID
-        user.clerkId = clerkUserId;
-        if (avatarUrl) user.avatarUrl = avatarUrl;
-        await user.save();
-        console.log(`[Clerk Auth] Linked existing MongoDB record to Clerk ID: ${user.email}`);
-      } else {
-        // Create new student document
-        user = await User.create({
-          clerkId: clerkUserId,
-          email,
-          name,
-          avatarUrl,
-          activityStreak: 1,
-          lastActiveDate: new Date(),
-          targetTier: '10+LPA'
-        });
-        console.log(`[Clerk Auth] Auto-provisioned new MongoDB student document: ${user.email} (${clerkUserId})`);
+      } catch (fetchErr) {
+        console.warn('[Clerk Profile Fetch] Notice:', fetchErr.message);
       }
     }
+
+    // Automatically find or onboard user via User schema logic
+    const user = await User.findOrCreateByClerk({
+      clerkId: clerkUserId,
+      email,
+      name,
+      avatarUrl
+    });
 
     // Attach authenticated user and claims to request
     req.auth = { userId: clerkUserId, ...(tokenPayload || {}) };
