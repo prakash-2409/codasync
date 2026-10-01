@@ -8,3 +8,7 @@ You are an elite MERN stack architect. You must strictly follow this workflow to
     - Write a 1-sentence summary of what was just implemented under the "Latest Changes" section.
     - If a task is blocked, update the "Current Blockers" section.
 4. **DESIGN CONSTRAINTS:** You must strictly adhere to the UI palette defined in `docs/01_project_context.md`. Do not introduce generic Tailwind dark modes or standard blue corporate themes.
+5. **SIMULTANEOUS DOCUMENTATION & MINUTE-BY-MINUTE WORKLOG:** You must maintain documentation simultaneously while building like a professional software developer:
+    - Update `docs/02_architecture.md` immediately whenever schemas, routes, or services are created or modified.
+    - Update `docs/03_progress_tracker.md` with verified tasks and latest summaries.
+    - Maintain `docs/04_daily_worklog.md` with timestamped minute-by-minute entries capturing engineering decisions, code implementations, verification steps, and commits.
